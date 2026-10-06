@@ -28,36 +28,58 @@ async function enviar(boton, tarea) {
 const camioneroId = () => $("#camionero").value;
 
 // ---------- cámara en vivo ----------
-async function capturar() {
-    // Abre el selector de archivos (en el celular: cámara o galería)
-    
+let usarCamaraFrontal = false; // Por defecto usa la cámara trasera ("environment")
 
-   
+async function capturar() {
     let stream;
-    try {
+    const video = $("#video");
+
+    // Función interna para iniciar o cambiar la cámara
+    async function iniciarStream() {
+        if (stream) {
+            // Apaga la cámara actual antes de cambiar
+            stream.getTracks().forEach((t) => t.stop());
+        }
+
+        const facingMode = usarCamaraFrontal ? "user" : "environment";
+
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment", width: { ideal: 1600 } },
+                video: { facingMode: facingMode, width: { ideal: 1600 } },
                 audio: false
             });
         } catch (e1) {
-            // Reintento sin preferencias (PC con webcam común)
+            // Reintento sin preferencias (útil en PC con webcam común)
             stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         }
+        video.srcObject = stream;
+    }
+
+    try {
+        await iniciarStream();
     } catch (e) {
         throw new Error(`No se pudo abrir la cámara (${e.name}). Revisá el permiso del navegador.`);
     }
 
-    const video = $("#video");
-    video.srcObject = stream;
     $("#camara").hidden = false;
 
     return new Promise((resolve) => {
         const cerrar = () => {
-            stream.getTracks().forEach((t) => t.stop());
+            if (stream) stream.getTracks().forEach((t) => t.stop());
             $("#camara").hidden = true;
+            // Limpiamos los eventos para evitar que se acumulen
+            $("#cam-cancelar").onclick = null;
+            $("#cam-cambiar").onclick = null;
+            $("#cam-disparar").onclick = null;
         };
+
         $("#cam-cancelar").onclick = () => { cerrar(); resolve(null); };
+
+        $("#cam-cambiar").onclick = async () => {
+            usarCamaraFrontal = !usarCamaraFrontal; // Alterna entre true y false
+            await iniciarStream(); // Reinicia la cámara
+        };
+
         $("#cam-disparar").onclick = () => {
             const escala = Math.min(1, 1600 / video.videoWidth);
             const c = document.createElement("canvas");
