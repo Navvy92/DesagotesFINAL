@@ -1,0 +1,143 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    background: #f4f6f8;
+    color: #1b1f24;
+}
+
+header, main {
+    padding: 12px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+}
+
+select, input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin: 4px 0 12px;
+    border: 1px solid #c4ccd4;
+    border-radius: 8px;
+    background: #fff;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 0;
+    border-radius: 8px;
+    background: #dde3ea;
+}
+
+    button.principal {
+        background: #1f6feb;
+        color: #fff;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    button:disabled {
+        opacity: .5;
+    }
+
+nav {
+    display: flex;
+    gap: 4px;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 12px;
+}
+
+    nav button.activa {
+        background: #1f6feb;
+        color: #fff;
+    }
+
+#msg {
+    max-width: 480px;
+    margin: 8px auto;
+    padding: 0 12px;
+    min-height: 1.2em;
+    font-weight: 600;
+}
+
+    #msg.ok {
+        color: #1a7f37;
+    }
+
+    #msg.error {
+        color: #c62828;
+    }
+
+.tarjeta {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.foto {
+    margin-bottom: 8px;
+}
+
+    .foto img {
+        width: 100%;
+        margin-top: 8px;
+        border-radius: 8px;
+    }
+
+        .foto img:not([src]) {
+            display: none;
+        }
+
+#camara {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+    #camara video {
+        flex: 1;
+        min-height: 0;
+        width: 100%;
+        object-fit: cover;
+    }
+
+.botonera {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+}
+[hidden] {
+    display: none !important;
+}
+
+footer {
+    max-width: 480px;
+    margin: 24px auto;
+    padding: 0 12px;
+    text-align: center;
+}
+
+    footer a {
+        font-size: 13px;
+        color: #6b7785;
+        text-decoration: none;
+    }
+
+        footer a:hover {
+            text-decoration: underline;
+        }

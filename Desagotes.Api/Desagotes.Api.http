@@ -1,0 +1,6 @@
+@Desagotes.Api_HostAddress = http://localhost:5038
+
+GET {{Desagotes.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

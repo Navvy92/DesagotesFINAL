@@ -1,0 +1,226 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Desagotes · Panel</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            background: #f4f6f8;
+            color: #1b1f24;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        .caja {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        input, select, button {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #c4ccd4;
+        }
+
+        button {
+            background: #1f6feb;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+        }
+
+            button.sec {
+                background: #dde3ea;
+                color: #1b1f24;
+            }
+
+            button:disabled {
+                opacity: .5;
+                cursor: default;
+            }
+
+        label {
+            display: block;
+            font-size: 13px;
+        }
+
+        .fila {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: end;
+            margin-bottom: 12px;
+        }
+
+        .tarjeta {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .fotos {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+            .fotos img {
+                width: 220px;
+                border-radius: 8px;
+            }
+
+        #msg {
+            color: #c62828;
+            font-weight: 600;
+            min-height: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e3e8ee;
+        }
+
+        th {
+            background: #e2f0d9;
+            font-size: 13px;
+        }
+
+        tr[data-rem-t] {
+            cursor: pointer;
+        }
+
+            tr[data-rem-t]:hover {
+                background: #f0f4f8;
+            }
+    </style>
+</head>
+<body>
+    <div class="caja">
+
+        <section id="login">
+            <h2>Ingresar</h2>
+            <div class="fila">
+                <div><label>Usuario</label><input id="usuario" autocomplete="username"></div>
+                <div><label>Contraseña</label><input id="clave" type="password" autocomplete="current-password"></div>
+                <button id="btn-login">Ingresar</button>
+            </div>
+        </section>
+
+        <section id="panel" hidden>
+            <div class="fila" style="justify-content: space-between">
+                <h2 style="margin:0">Panel</h2>
+                <div><span id="quien"></span> <button class="sec" id="btn-salir">Salir</button></div>
+            </div>
+
+            <div class="fila">
+                <button data-vista="buscar">Buscar remitos</button>
+                <button class="sec" data-vista="jornadas">Jornadas</button>
+                <button class="sec" data-vista="camioneros">Camioneros</button>
+                <button class="sec" data-vista="vehiculos">Camiones</button>
+                <button class="sec" data-vista="exportar">Exportar</button>
+            </div>
+
+            <!-- Buscar -->
+            <div id="v-buscar">
+                <div class="fila">
+                    <div><label>Talonario</label><input id="b-talonario" type="number" style="width:110px"></div>
+                    <div><label>N° de remito</label><input id="b-numero" type="number" style="width:130px"></div>
+                    <div><label id="r-pedido-label">Pedido (si no lo tenés, dejalo vacío)</label><input id="b-pedido" style="width:150px"></div>
+                    <button id="btn-buscar">Buscar</button>
+                </div>
+                <div id="resultados"></div>
+                <h3>Últimos remitos cargados</h3>
+                <div id="listado"></div>
+            </div>
+            <div><span id="quien"></span> <a href="/" style="margin-right:8px">Pantalla del camionero</a> <button class="sec" id="btn-salir">Salir</button></div>
+            <!-- Jornadas -->
+            <div id="v-jornadas" hidden>
+                <h3>Abiertas (sin check-out)</h3>
+                <div id="l-abiertas"></div>
+
+                <h3>Cerradas con remitos faltantes</h3>
+                <div id="l-pendientes"></div>
+
+                <div id="cierre-form" class="tarjeta" hidden>
+                    <h3 id="cierre-titulo"></h3>
+                    <input type="hidden" id="c-id">
+                    <input type="hidden" id="c-modo">
+                    <div id="c-campos-cierre">
+                        <label>Remitos hechos</label>
+                        <input id="c-remitos" type="number" min="0" max="50">
+                        <label>Hora de salida (vacío = ahora)</label>
+                        <input id="c-hora" type="datetime-local">
+                    </div>
+                    <label>Nota / motivo</label>
+                    <input id="c-nota" style="width:100%">
+                    <div class="fila" style="margin-top:8px">
+                        <button id="c-ok">Confirmar</button>
+                        <button class="sec" id="c-cancelar">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camioneros -->
+            <div id="v-camioneros" hidden>
+                <div class="fila">
+                    <div><label>Nuevo camionero</label><input id="n-camioneros" placeholder="Nombre y apellido"></div>
+                    <button data-alta="camioneros">Agregar</button>
+                </div>
+                <div id="l-camioneros"></div>
+            </div>
+
+            <!-- Camiones -->
+            <div id="v-vehiculos" hidden>
+                <div class="fila">
+                    <div><label>Nueva patente</label><input id="n-vehiculos" placeholder="AB123CD"></div>
+                    <button data-alta="vehiculos">Agregar</button>
+                </div>
+                <div id="l-vehiculos"></div>
+            </div>
+
+            <!-- Exportar -->
+            <div id="v-exportar" hidden>
+                <div class="fila">
+                    <div><label>Desde</label><input id="e-desde" type="date"></div>
+                    <div><label>Hasta</label><input id="e-hasta" type="date"></div>
+                    <div>
+                        <label>Cliente</label>
+                        <select id="e-cliente">
+                            <option value="">Todos</option>
+                            <option value="TELEFONICA">Telefónica</option>
+                            <option value="TELECOM">Telecom</option>
+                        </select>
+                    </div>
+                    <button id="btn-exportar">Descargar Excel</button>
+                </div>
+                <p>Un remito por fila, en el orden de la planilla de facturación.</p>
+            </div>
+        </section>
+
+        <p id="msg"></p>
+    </div>
+    <script src="panel.js"></script>
+</body>
+</html>
