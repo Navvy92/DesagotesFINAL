@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Desagotes.Api.Controllers;
 
+[Authorize(AuthenticationSchemes = "Camionero")]
 [ApiController]
 [Route("api/[controller]")]
+
 public class CheckinController : ControllerBase
 {
     private readonly DesagotesContext _db;
@@ -21,6 +24,9 @@ public class CheckinController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromForm] CheckinRequest req)
     {
+
+        var camioneroId = User.CamioneroId();
+
         // 1. Validaciones básicas
         if (req.Foto == null || req.Foto.Length == 0)
             return BadRequest(new { mensaje = "La foto es obligatoria." });
@@ -36,7 +42,7 @@ public class CheckinController : ControllerBase
 
         // 2. ¿Existen y están activos el camionero y el vehículo?
         var camioneroOk = await _db.Camioneros
-            .AnyAsync(c => c.Id == req.CamioneroId && c.Activo == true);
+            .AnyAsync(c => c.Id == camioneroId && c.Activo == true);
         var vehiculoOk = await _db.Vehiculos
             .AnyAsync(v => v.Id == req.VehiculoId && v.Activo == true);
 
@@ -87,4 +93,5 @@ public class CheckinController : ControllerBase
 
         return Ok(new { jornada.Id, jornada.Estado, jornada.CheckinAt });
     }
+
 }

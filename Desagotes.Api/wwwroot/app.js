@@ -12,6 +12,10 @@ function mensaje(texto, error = false) {
 
 async function api(url, opciones) {
     const r = await fetch(url, opciones);
+    if (r.status === 401 && !url.includes("/api/sesion/login")) {
+        mostrarAcceso();
+        throw new Error("Tu sesión venció. Ingresá de nuevo.");
+    }
     const datos = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(datos.mensaje || datos.title || "Error " + r.status);
     return datos;
@@ -25,7 +29,8 @@ async function enviar(boton, tarea) {
     finally { boton.disabled = false; }
 }
 
-const camioneroId = () => $("#camionero").value;
+let sesion = null;
+const camioneroId = () => sesion?.id;
 
 // ---------- cámara en vivo ----------
 let usarCamaraFrontal = false; // Por defecto usa la cámara trasera ("environment")
@@ -290,16 +295,46 @@ async function llenar(select, url, campo) {
         select.appendChild(o);
     }
 }
+// ---------- acceso con PIN ----------
+function mostrarAcceso() {
+    sesion = null;
+    $("#app").hidden = true;
+    $("#acceso").hidden = false;
+}
 
-$("#camionero").onchange = () => {
-    try { localStorage.setItem("camionero", camioneroId()); } catch { }
-    cargarHistorial();
+async function entrar(s) {
+    sesion = s;
+    try { localStorage.setItem("camionero", s.id); } catch { }
+    $("#quien").textContent = s.nombre;
+    $("#acceso").hidden = true;
+    $("#app").hidden = false;
+    await llenar($("#vehiculo"), "/api/vehiculos", "patente");
+}
+
+$("#btn-ingresar").onclick = (e) => enviar(e.target, async () => {
+    if (!$("#camionero").value) throw new Error("Elegí tu nombre.");
+    if (!$("#pin").value) throw new Error("Ingresá tu PIN.");
+    const s = await api("/api/sesion/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ camioneroId: Number($("#camionero").value), pin: $("#pin").value })
+    });
+    $("#pin").value = "";
+    $("#msg").textContent = "";
+    await entrar(s);
+});
+
+$("#btn-salir").onclick = async () => {
+    await fetch("/api/sesion/logout", { method: "POST" });
+    mostrarAcceso();
 };
 
 (async function iniciar() {
     try {
         await llenar($("#camionero"), "/api/camioneros", "nombre");
-        await llenar($("#vehiculo"), "/api/vehiculos", "patente");
         try { $("#camionero").value = localStorage.getItem("camionero") ?? ""; } catch { }
+        const r = await fetch("/api/sesion/me");
+        if (r.ok) await entrar(await r.json());
+        else mostrarAcceso();
     } catch { mensaje("No se pudo conectar con el servidor.", true); }
 })();

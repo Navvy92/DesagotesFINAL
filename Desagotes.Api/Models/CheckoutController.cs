@@ -2,13 +2,17 @@
 using Desagotes.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Desagotes.Api.Controllers;
 
+[Authorize(AuthenticationSchemes = "Camionero")]
 [ApiController]
 [Route("api/[controller]")]
 public class CheckoutController : ControllerBase
 {
+    
+
     private readonly DesagotesContext _db;
     private readonly FotoService _fotos;
 
@@ -21,6 +25,8 @@ public class CheckoutController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Post([FromForm] CheckoutRequest req)
     {
+        var camioneroId = User.CamioneroId();
+
         var errorFoto = FotoService.Validar(req.Foto, "Foto");
         if (errorFoto != null)
             return BadRequest(new { mensaje = errorFoto });
@@ -30,7 +36,7 @@ public class CheckoutController : ControllerBase
 
         // Buscar la jornada abierta de este camionero
         var jornada = await _db.Jornada
-            .Where(j => j.CamioneroId == req.CamioneroId && j.Estado == "ABIERTA")
+            .Where(j => j.CamioneroId == camioneroId && j.Estado == "ABIERTA")
             .FirstOrDefaultAsync();
 
         if (jornada == null)

@@ -136,6 +136,7 @@
 
             <div class="fila">
                 <button data-vista="buscar">Buscar remitos</button>
+                <button class="sec" data-vista="accesos">Accesos</button>
                 <button class="sec" data-vista="jornadas">Jornadas</button>
                 <button class="sec" data-vista="camioneros">Camioneros</button>
                 <button class="sec" data-vista="vehiculos">Camiones</button>
@@ -198,6 +199,13 @@
                     <button data-alta="vehiculos">Agregar</button>
                 </div>
                 <div id="l-vehiculos"></div>
+            </div>
+            <div id="v-accesos" hidden>
+                <div class="fila">
+                    <div><label>Camionero</label><select id="a-camionero"><option value="">Todos</option></select></div>
+                    <button id="btn-accesos">Ver</button>
+                </div>
+                <div id="l-accesos"></div>
             </div>
 
             <!-- Exportar -->

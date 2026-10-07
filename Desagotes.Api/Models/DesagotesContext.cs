@@ -13,6 +13,8 @@ public partial class DesagotesContext : DbContext
 
     public virtual DbSet<Admin> Admins { get; set; }
 
+    public virtual DbSet<AccesoLog> AccesoLogs { get; set; }
+
     public virtual DbSet<Camionero> Camioneros { get; set; }
 
     public virtual DbSet<Jornada> Jornada { get; set; }
@@ -47,6 +49,10 @@ public partial class DesagotesContext : DbContext
                 .HasDefaultValue(true)
                 .HasColumnName("activo");
             entity.Property(e => e.Nombre).HasColumnName("nombre");
+            entity.Property(e => e.PinHash).HasColumnName("pin_hash");
+            entity.Property(e => e.PinVersion).HasColumnName("pin_version");
+            entity.Property(e => e.IntentosFallidos).HasColumnName("intentos_fallidos");
+            entity.Property(e => e.BloqueadoHasta).HasColumnName("bloqueado_hasta");
         });
 
         modelBuilder.Entity<Jornada>(entity =>
@@ -139,7 +145,17 @@ public partial class DesagotesContext : DbContext
                 .HasColumnName("activo");
             entity.Property(e => e.Patente).HasColumnName("patente");
         });
-
+        modelBuilder.Entity<AccesoLog>(entity =>
+        {
+            entity.ToTable("acceso_log");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CamioneroId).HasColumnName("camionero_id");
+            entity.Property(e => e.Evento).HasColumnName("evento");
+            entity.Property(e => e.Ip).HasColumnName("ip");
+            entity.Property(e => e.Dispositivo).HasColumnName("dispositivo");
+            entity.Property(e => e.CreadoAt).HasColumnName("creado_at");
+        });
         OnModelCreatingPartial(modelBuilder);
     }
 

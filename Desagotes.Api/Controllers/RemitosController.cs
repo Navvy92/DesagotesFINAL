@@ -81,6 +81,7 @@ public class RemitosController : ControllerBase
         _fotos = fotos;
     }
 
+    [Authorize(AuthenticationSchemes = "Camionero")]
     [HttpPost]
     public async Task<IActionResult> Post([FromForm] RemitoRequest req)
     {

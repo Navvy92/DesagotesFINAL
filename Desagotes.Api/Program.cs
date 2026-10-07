@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 Desagotes.Api.Reglas.PlazoHorasRemitos =
@@ -31,7 +32,34 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         // Para una API: responder 401/403 en vez de redirigir a una página de login
         o.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
         o.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
-    });
+
+
+    })
+        .AddCookie("Camionero", o =>
+        {
+            o.Cookie.Name = "desagotes.camionero";
+            o.Cookie.HttpOnly = true;
+            o.Cookie.SameSite = SameSiteMode.Strict;
+            o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            o.ExpireTimeSpan = TimeSpan.FromDays(30);
+            o.SlidingExpiration = true;
+            o.Events.OnRedirectToLogin = ctx => { ctx.Response.StatusCode = 401; return Task.CompletedTask; };
+            o.Events.OnRedirectToAccessDenied = ctx => { ctx.Response.StatusCode = 403; return Task.CompletedTask; };
+
+            // En cada pedido: ¿el camionero sigue activo y el PIN es el mismo de cuando entró?
+            o.Events.OnValidatePrincipal = async ctx =>
+            {
+                var db = ctx.HttpContext.RequestServices.GetRequiredService<DesagotesContext>();
+                var ok = int.TryParse(ctx.Principal?.FindFirst("camionero_id")?.Value, out var id)
+                      && int.TryParse(ctx.Principal?.FindFirst("pin_version")?.Value, out var ver)
+                      && await db.Camioneros.AnyAsync(c => c.Id == id && c.Activo == true && c.PinVersion == ver);
+                if (!ok)
+                {
+                    ctx.RejectPrincipal();
+                    await ctx.HttpContext.SignOutAsync("Camionero");
+                }
+            };
+        }); ;
 
 builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(o =>
@@ -45,6 +73,14 @@ builder.Services.AddRateLimiter(o =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    o.AddPolicy("pin", ctx => RateLimitPartition.GetFixedWindowLimiter(
+    ctx.Connection.RemoteIpAddress?.ToString() ?? "desconocida",
+    _ => new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = 30,
+        Window = TimeSpan.FromMinutes(1),
+        QueueLimit = 0
+    }));
 });
 var app = builder.Build();
 

@@ -10,66 +10,77 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <label>¿Quién sos?</label>
-        <select id="camionero"></select>
-    </header>
-
-    <nav>
-        <button data-tab="checkin" class="activa">Check-in</button>
-        <button data-tab="checkout">Check-out</button>
-        <button data-tab="historial">Historial</button>
-    </nav>
-
     <p id="msg"></p>
 
-    <main>
-        <section id="checkin">
-            <label>Patente del camión</label>
-            <select id="vehiculo"></select>
-            <div class="foto" data-foto="checkin">
-                <button type="button">📷 Foto de entrada</button><img alt="">
-            </div>
-            <button id="btn-checkin" class="principal">Marcar entrada</button>
-        </section>
+    <section id="acceso" hidden>
+        <h2>Ingresar</h2>
+        <label>¿Quién sos?</label>
+        <select id="camionero"></select>
+        <label>PIN</label>
+        <input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off">
+        <button id="btn-ingresar" class="principal">Ingresar</button>
+    </section>
 
-        <section id="checkout" hidden>
-            <label>Remitos hechos hoy</label>
-            <input id="declarados" type="number" inputmode="numeric" min="0" max="50">
-            <div class="foto" data-foto="checkout">
-                <button type="button">📷 Foto de salida</button><img alt="">
-            </div>
-            <button id="btn-checkout" class="principal">Marcar salida</button>
-        </section>
+    <div id="app" hidden>
+        <header>
+            <span>Hola, <strong id="quien"></strong></span>
+            <button id="btn-salir">Salir</button>
+        </header>
 
-        <section id="historial" hidden>
-            <div id="lista"></div>
+        <nav>
+            <button data-tab="checkin" class="activa">Check-in</button>
+            <button data-tab="checkout">Check-out</button>
+            <button data-tab="historial">Historial</button>
+        </nav>
 
-            <div id="remito-form" hidden>
-                <h3>Cargar remito</h3>
-                <input type="hidden" id="r-jornada">
-                <label>Talonario (ej: el 10 de 10-872)</label>
-                <input id="r-talonario" type="number" inputmode="numeric">
-                <label>Número de remito (ej: el 872)</label>
-                <input id="r-numero" type="number" inputmode="numeric">
-                <label>Cliente</label>
-                <select id="r-cliente">
-                    <option value="TELEFONICA">Telefónica</option>
-                    <option value="TELECOM">Telecom</option>
-                </select>
-                <label id="r-pedido-label">Pedido (si no lo tenés, dejalo vacío)</label>
-                <input id="r-pedido" inputmode="numeric">
-                <div class="foto" data-foto="remito">
-                    <button type="button">📷 Foto del remito</button><img alt="">
+        <main>
+            <section id="checkin">
+                <label>Patente del camión</label>
+                <select id="vehiculo"></select>
+                <div class="foto" data-foto="checkin">
+                    <button type="button">📷 Foto de entrada</button><img alt="">
                 </div>
-                <div class="foto" data-foto="camara" data-origen="galeria">
-                    <button type="button">🖼️ Foto de la cámara desagotada</button><img alt="">
+                <button id="btn-checkin" class="principal">Marcar entrada</button>
+            </section>
+
+            <section id="checkout" hidden>
+                <label>Remitos hechos hoy</label>
+                <input id="declarados" type="number" inputmode="numeric" min="0" max="50">
+                <div class="foto" data-foto="checkout">
+                    <button type="button">📷 Foto de salida</button><img alt="">
                 </div>
-                <button id="btn-remito" class="principal">Guardar remito</button>
-                <button id="btn-remito-cancelar">Cerrar</button>
-            </div>
-        </section>
-    </main>
+                <button id="btn-checkout" class="principal">Marcar salida</button>
+            </section>
+
+            <section id="historial" hidden>
+                <div id="lista"></div>
+
+                <div id="remito-form" hidden>
+                    <h3>Cargar remito</h3>
+                    <input type="hidden" id="r-jornada">
+                    <label>Talonario (ej: el 10 de 10-872)</label>
+                    <input id="r-talonario" type="number" inputmode="numeric">
+                    <label>Número de remito (ej: el 872)</label>
+                    <input id="r-numero" type="number" inputmode="numeric">
+                    <label>Cliente</label>
+                    <select id="r-cliente">
+                        <option value="TELEFONICA">Telefónica</option>
+                        <option value="TELECOM">Telecom</option>
+                    </select>
+                    <label id="r-pedido-label">Pedido (si no lo tenés, dejalo vacío)</label>
+                    <input id="r-pedido" inputmode="numeric">
+                    <div class="foto" data-foto="remito">
+                        <button type="button">📷 Foto del remito</button><img alt="">
+                    </div>
+                    <div class="foto" data-foto="camara" data-origen="galeria">
+                        <button type="button">🖼️ Foto de la cámara desagotada</button><img alt="">
+                    </div>
+                    <button id="btn-remito" class="principal">Guardar remito</button>
+                    <button id="btn-remito-cancelar">Cerrar</button>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <footer>
         <a href="/panel/">Acceso personal</a>
@@ -79,7 +90,6 @@
         <video id="video" autoplay playsinline muted></video>
         <div class="botonera">
             <button id="cam-cancelar">Cancelar</button>
-            <button id="cam-cambiar">Girar cámara</button>
             <button id="cam-disparar" class="principal">Sacar foto</button>
         </div>
     </div>

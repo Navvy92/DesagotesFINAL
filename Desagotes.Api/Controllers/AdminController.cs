@@ -34,7 +34,7 @@ public class AdminController : ControllerBase
     [HttpGet("camioneros")]
     public async Task<IActionResult> ListarCamioneros() =>
         Ok(await _db.Camioneros.OrderBy(c => c.Nombre)
-            .Select(c => new { c.Id, c.Nombre, c.Activo }).ToListAsync());
+            .Select(c => new { c.Id, c.Nombre, c.Activo, TienePin = c.PinHash != null }).ToListAsync());
 
     [HttpPost("camioneros")]
     public async Task<IActionResult> NuevoCamionero([FromBody] CamioneroDto dto)

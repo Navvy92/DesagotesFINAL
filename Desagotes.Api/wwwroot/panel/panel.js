@@ -4,7 +4,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
 const fmt = (d) => new Date(d).toLocaleString("es-AR");
 const JSON_H = { "Content-Type": "application/json" };
 const cfg = { camioneros: "nombre", vehiculos: "patente" };
-const VISTAS = ["buscar", "jornadas", "camioneros", "vehiculos", "exportar"];
+const VISTAS = ["buscar", "jornadas", "camioneros", "vehiculos", "exportar", "accesos"];
 
 // ---------- base ----------
 function mostrar(logueado, usuario = "") {
@@ -59,6 +59,7 @@ document.querySelectorAll("[data-vista]").forEach((b) => {
         $("#msg").textContent = "";
         if (cfg[vista]) listar(vista);
         if (vista === "jornadas") cargarJornadas();
+        if (vista === "accesos") cargarAccesos();
         if (vista === "buscar") cargarListado();
     };
 });
@@ -94,7 +95,8 @@ async function listar(tipo) {
         const datos = await api("/api/admin/" + tipo);
         $("#l-" + tipo).innerHTML = datos.map((d) => `
       <div class="tarjeta fila">
-        <strong style="flex:1;${d.activo ? "" : "opacity:.5"}">${esc(d[campo])}${d.activo ? "" : " (de baja)"}</strong>
+        <strong style="flex:1;${d.activo ? "" : "opacity:.5"}">${esc(d[campo])}${d.activo ? "" : " (de baja)"}${tipo === "camioneros" && !d.tienePin ? " · sin PIN" : ""}</strong>
+        ${tipo === "camioneros" ? `<button class="sec" data-acc="pin" data-tipo="${tipo}" data-id="${d.id}" data-valor="${esc(d.nombre)}">Generar PIN</button>` : ""}
         <button class="sec" data-acc="editar" data-tipo="${tipo}" data-id="${d.id}" data-valor="${esc(d[campo])}">Editar</button>
         <button class="sec" data-acc="activo" data-tipo="${tipo}" data-id="${d.id}" data-activo="${d.activo}">${d.activo ? "Dar de baja" : "Reactivar"}</button>
       </div>`).join("");
@@ -185,6 +187,13 @@ document.addEventListener("click", async (e) => {
     if (acc) {
         const { acc: accion, tipo, id } = acc.dataset;
         try {
+            if (accion === "pin") {
+                if (!confirm(`¿Generar un PIN nuevo para ${acc.dataset.valor}? Se cierran sus sesiones abiertas.`)) return;
+                const r = await api(`/api/admin/camioneros/${id}/pin`, { method: "POST" });
+                alert(`PIN de ${acc.dataset.valor}: ${r.pin}\n\nAnotalo ahora: no se vuelve a mostrar.`);
+                listar(tipo);
+                return;
+            }
             if (accion === "editar") {
                 const nuevo = prompt("Nuevo valor:", acc.dataset.valor);
                 if (nuevo === null) return;
@@ -298,7 +307,36 @@ document.addEventListener("click", (e) => {
     $("#btn-buscar").click();
     window.scrollTo({ top: 0, behavior: "smooth" });
 });
-
+// ---------- accesos de camioneros ----------
+async function cargarAccesos() {
+    try {
+        const sel = $("#a-camionero");
+        if (sel.options.length <= 1) {
+            for (const c of await api("/api/admin/camioneros")) {
+                const o = document.createElement("option");
+                o.value = c.id;
+                o.textContent = c.nombre;
+                sel.appendChild(o);
+            }
+        }
+        const p = sel.value ? "?camioneroId=" + sel.value : "";
+        const lista = await api("/api/admin/accesos" + p);
+        $("#l-accesos").innerHTML = lista.length
+            ? `<table>
+                 <thead><tr><th>Fecha</th><th>Camionero</th><th>Evento</th><th>IP</th><th>Dispositivo</th></tr></thead>
+                 <tbody>${lista.map((a) => `
+                   <tr>
+                     <td>${fmt(a.creadoAt)}</td>
+                     <td>${esc(a.camionero)}</td>
+                     <td>${esc(a.evento)}</td>
+                     <td>${esc(a.ip)}</td>
+                     <td title="${esc(a.dispositivo)}">${esc((a.dispositivo || "").slice(0, 60))}</td>
+                   </tr>`).join("")}</tbody>
+               </table>`
+            : "<p>Sin registros.</p>";
+    } catch (e) { $("#msg").textContent = e.message; }
+}
+$("#btn-accesos").onclick = cargarAccesos;
 // ---------- al abrir: ¿ya hay sesión? ----------
 fetch("/api/auth/me")
     .then((r) => r.ok ? r.json() : null)

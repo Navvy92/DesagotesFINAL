@@ -17,9 +17,13 @@ public class JornadasController : ControllerBase
     }
 
     // ABIERTO: historial del camionero (últimos 30 días)
+    [Authorize(AuthenticationSchemes = "Camionero")]
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] int camioneroId)
+    public async Task<IActionResult> Get()
     {
+        var camioneroId = User.CamioneroId();
+    // ... el resto queda igual
+    
         var desde = DateTime.UtcNow.AddDays(-30);
 
         var jornadas = await _db.Jornada
@@ -66,16 +70,7 @@ public class JornadasController : ControllerBase
 
     // ABIERTO: remitos ya cargados de una jornada
     [HttpGet("{id:int}/remitos")]
-    public async Task<IActionResult> GetRemitos(int id)
-    {
-        var lista = await _db.Remitos
-            .Where(r => r.JornadaId == id)
-            .OrderBy(r => r.CargadoAt)
-            .Select(r => new { r.Id, r.Talonario, r.NroRemito, r.Cliente, r.NroPedido })
-            .ToListAsync();
 
-        return Ok(lista);
-    }
 
     // PROTEGIDO: todas las jornadas cerradas con remitos faltantes
     [Authorize]
